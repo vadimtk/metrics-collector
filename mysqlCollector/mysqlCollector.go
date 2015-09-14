@@ -1,17 +1,17 @@
 package mysqlCollector
 
 import (
-	"time"
-	"fmt"
+	"database/sql"
 	"errors"
+	"fmt"
 	"net"
 	"strconv"
 	"strings"
-	"database/sql"
+	"time"
 
+	"../mm"
+	"../mysql"
 	log "github.com/Sirupsen/logrus"
-	"mm"
-	"mysql"
 )
 
 var (
@@ -19,23 +19,21 @@ var (
 	networkError = errors.New("Network error")
 )
 
-
 type MySQLCollector struct {
-	url string
-	conn   mysql.Connector
-	config *Config
+	url            string
+	conn           mysql.Connector
+	config         *Config
 	tickChan       <-chan time.Time
 	collectionChan chan *mm.Collection
 	connectedChan  chan bool
 }
 
-
-func NewMysqlCollector (url string) *MySQLCollector {
-	m := &MySQLCollector {
-		url: url,
-		conn: mysql.NewConnection(url),
+func NewMysqlCollector(url string) *MySQLCollector {
+	m := &MySQLCollector{
+		url:           url,
+		conn:          mysql.NewConnection(url),
 		connectedChan: make(chan bool, 1),
-		config: &Config{Status: GlobalMySQLStatus, InnoDB: []string{"%"}},
+		config:        &Config{Status: GlobalMySQLStatus, InnoDB: []string{"%"}},
 	}
 	return m
 }
@@ -87,18 +85,18 @@ func (m *MySQLCollector) setGlobalVars() {
 	// Set global vars we need.  If these fail, that's ok: they won't work,
 	// but don't let that stop us from collecting other metrics.
 	/*
-	if len(m.config.InnoDB) > 0 {
-		log.Debug("setGlobalVars:InnoDB config")
-		for _, module := range m.config.InnoDB {
-			sql := "SET GLOBAL innodb_monitor_enable = '" + module + "'"
-			if _, err := m.conn.DB().Exec(sql); err != nil {
-				errMsg := fmt.Sprintf("Cannot collect InnoDB stats because '%s' failed: %s", sql, err)
-				log.Error(errMsg)
-				m.config.InnoDB = []string{}
-				break
+		if len(m.config.InnoDB) > 0 {
+			log.Debug("setGlobalVars:InnoDB config")
+			for _, module := range m.config.InnoDB {
+				sql := "SET GLOBAL innodb_monitor_enable = '" + module + "'"
+				if _, err := m.conn.DB().Exec(sql); err != nil {
+					errMsg := fmt.Sprintf("Cannot collect InnoDB stats because '%s' failed: %s", sql, err)
+					log.Error(errMsg)
+					m.config.InnoDB = []string{}
+					break
+				}
 			}
 		}
-	}
 	*/
 }
 
@@ -114,7 +112,6 @@ func (m *MySQLCollector) run() {
 
 	connected := false
 	go m.connect()
-
 
 	for {
 
@@ -183,7 +180,6 @@ func (m *MySQLCollector) run() {
 	}
 }
 
-
 // --------------------------------------------------------------------------
 // SHOW STATUS
 // --------------------------------------------------------------------------
@@ -191,7 +187,6 @@ func (m *MySQLCollector) run() {
 func (m *MySQLCollector) GetShowStatusMetrics(conn *sql.DB, c *mm.Collection) error {
 	log.Debug("GetShowStatusMetrics:call")
 	defer log.Debug("GetShowStatusMetrics:return")
-
 
 	rows, err := conn.Query("SHOW /*!50002 GLOBAL */ STATUS")
 	if err != nil {
