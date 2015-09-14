@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"../pct"
 	_ "github.com/go-sql-driver/mysql"
-	"pct"
 )
 
 type Query struct {
@@ -159,4 +159,3 @@ func (c *Connection) Uptime() (uptime int64, err error) {
 	c.conn.QueryRow("SHOW STATUS LIKE 'Uptime'").Scan(&varName, &uptime)
 	return uptime, nil
 }
-

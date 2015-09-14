@@ -22,7 +22,7 @@ type Collection struct {
 }
 
 type InstanceStats struct {
-        Stats map[string]*Stats // keyed on metric name
+	Stats map[string]*Stats // keyed on metric name
 }
 
 type Report struct {

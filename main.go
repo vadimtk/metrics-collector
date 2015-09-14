@@ -1,14 +1,14 @@
 package main
 
 import "fmt"
-import "time"
 import "os"
 import "os/signal"
-import log "github.com/Sirupsen/logrus"
+import "time"
 
 import (
-	"mysqlCollector"
-	"mm"
+	"./mm"
+	"./mysqlCollector"
+	log "github.com/Sirupsen/logrus"
 )
 
 func main() {
@@ -25,15 +25,15 @@ func main() {
 	ag := mm.NewAggregator(collectionChan, *spool)
 	ag.Start()
 
-signalChan := make(chan os.Signal, 1)
-cleanupDone := make(chan bool)
-signal.Notify(signalChan, os.Interrupt)
-go func() {
-    for _ = range signalChan {
-        fmt.Println("\nReceived an interrupt, stopping services...\n")
-        cleanupDone <- true
-    }
-}()
-<-cleanupDone
+	signalChan := make(chan os.Signal, 1)
+	cleanupDone := make(chan bool)
+	signal.Notify(signalChan, os.Interrupt)
+	go func() {
+		for _ = range signalChan {
+			fmt.Println("\nReceived an interrupt, stopping services...\n")
+			cleanupDone <- true
+		}
+	}()
+	<-cleanupDone
 
 }

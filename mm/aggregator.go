@@ -24,7 +24,7 @@ import (
 )
 
 import (
-		log "github.com/Sirupsen/logrus" 
+	log "github.com/Sirupsen/logrus"
 )
 
 type Aggregator struct {
