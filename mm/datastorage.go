@@ -16,6 +16,7 @@ type MongoRecord struct {
 	Ts     time.Time
 	Name   string
 	Values []float64
+	Avg    float64
 }
 
 func (ds *DataStorage) Write(service string, data *Report) error {
@@ -29,8 +30,7 @@ func (ds *DataStorage) Write(service string, data *Report) error {
 	session.SetMode(mgo.Monotonic, true)
 	c := session.DB("metrics").C("data")
 
-	//recs := []*MongoRecord{}
-	//recs := make([]MongoRecord, len(data.Stats[0].Stats))
+	recs := make([]interface{}, len(data.Stats[0].Stats))
 
 	i := 0
 	for key, value := range data.Stats[0].Stats {
@@ -39,16 +39,14 @@ func (ds *DataStorage) Write(service string, data *Report) error {
 		rec.Ts = data.Ts
 		rec.Name = key
 		rec.Values = value.Vals
-		err := c.Insert(rec)
-		if err != nil {
-			log.Fatal(err)
-		}
-		//recs = append(recs,rec)
+		rec.Avg = value.Avg
+		recs[i] = rec
 		i++
 	}
-	//x := c.Bulk();
-	//x.Unordered();
-	//x.Insert(recs);
-	//_, err = x.Run()
+
+	err=c.Insert(recs...);
+	if err != nil {
+		panic(err)
+	}
 	return nil
 }
